@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <form id="registerform"  action="/register" method="post"
+    label-width="70px"
+    class="Login-container"
+>
+    <h3 class="Login_title">Register new account</h3>
+    <!--账号-->
+
+    <div class="register">
+        <input
+            type="text"
+            placeholder="Input your Username"
+            id="username" name="username" required
+        ></input>
+
+        <br>
+        <br>
+        <!--密码-->
+        <input
+            type="password"
+            placeholder="Input your Password"
+            id="password" name="password"  required
+        ></input>
+
+        <br>
+        <br>
+        <div>
+            <button class="registerbtn" type="submit" class="btn btn-primary" name="register" value="REGISTER">Register</button>
+            <button onclick="window.location.href='/'" class="cancelbtn" type="submit" class="btn btn-primary" name="cancel" value="LOGIN">Cancel</button>
+
+           
+        </div>
+    </div>
+    <!--登录按钮-->
+</form>
+</body>
+</html>

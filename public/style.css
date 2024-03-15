@@ -1,0 +1,86 @@
+.Login-container {
+    width: 350px;
+    border: 1px solid #eaeaea;
+    margin: 180px auto;
+    padding: 35px 35px 15px 35px;
+    background-color: #a7a096;
+    border-radius: 15px;
+    box-shadow: 0 0 25px #cac6c6;
+    text-align: center;
+  }
+
+  input {
+    width: 198px;
+  }
+  .loginbtn{
+    background-color: orange;
+  }
+  .registerbtn{
+    background-color: orange;
+  }
+  .cancelbtn{
+    background-color: orange;
+  }
+ 
+input {
+  width: 198px;
+}
+.loginbtn{
+  background-color: orange;
+}
+.registerbtn{
+  background-color: orange;
+}
+.cancelbtn{
+  background-color: orange;
+}
+.categraysubmitbtn{
+    background-color: orange;
+}
+
+.d-flex{
+    display: flex;
+}
+.Categaryform{
+    width: 500px;
+    border: 1px solid #eaeaea;
+    margin: 180px auto;
+    padding: 35px 35px 15px 35px;
+    background-color: #a7a096;
+    border-radius: 15px;
+    box-shadow: 0 0 25px #cac6c6;
+    text-align: center;
+}
+.Categaryform div {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.Categaryform label {
+    flex: 1; /* 标签占据剩余空间 */
+    text-align: right;
+    padding-right: 10px;
+}
+
+.Categaryform input,
+.Categaryform textarea {
+    flex: 2; /* 输入字段占据剩余空间 */
+}
+#imagePreview{
+    border-radius: 15px;
+    border: 1px solid #eaeaea;
+    width: 430px;
+    height: 150px;
+    justify-content: space-between
+}
+.pictureContainer {
+    flex-grow: 1;
+    margin-right: 10px; /* 控制图片容器之间的间距 */
+    position: relative;
+} 
+.deleteButton {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+}

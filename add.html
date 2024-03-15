@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+      crossorigin="anonymous"
+    ></script>
+
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">
+          <img
+            src="/asset/icon.jpg"
+            style="border-radius: 50%"
+            width="60"
+            height="60"
+            class="icon"
+          />
+        </a>
+        <span id="navbar-text" style="font-size: 30px"
+          >&ensp; YaSuo Game Shop</span
+        >
+        &ensp; &ensp;&ensp; &ensp;&ensp; &ensp;
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a
+                class="nav-link active"
+                aria-current="page"
+                style="font-size: 30px"
+                href="#"
+                onclick="window.location.href='/home'"
+                >Home</a
+              >
+            </li>
+            &ensp; &ensp;&ensp;
+            <li class="nav-item">
+              <a
+                class="nav-link active"
+                aria-current="page"
+                style="font-size: 30px"
+                href="#"
+                >My Cart</a
+              >
+            </li>
+            &ensp;&ensp;&ensp;
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                style="font-size: 30px"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                Category
+              </a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#">Action</a></li>
+                <li><a class="dropdown-item" href="#">Another action</a></li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a class="dropdown-item" href="#">Something else here</a>
+                </li>
+              </ul>
+            </li>
+            &ensp; &ensp;&ensp; &ensp;&ensp; &ensp; &ensp; &ensp;&ensp;
+            &ensp;&ensp; &ensp; &ensp; &ensp;&ensp; &ensp;&ensp; &ensp; &ensp;
+            &ensp;&ensp; &ensp;&ensp; &ensp; &ensp; &ensp;&ensp; &ensp;&ensp;
+            &ensp;
+            <li class="nav-item">
+              <a
+                class="nav-link active"
+                aria-current="page"
+                style="font-size: 20px"
+                href="#"
+              >
+                <img
+                  onclick="window.location.href='/add'"
+                  src="/asset/add.jpg"
+                  alt="Bootstrap"
+                  width="50"
+                  height="50"
+                  class="rounded-circle"
+                />
+              </a>
+            </li>
+          </ul>
+          <form class="d-flex" role="search">
+            <input class="form-control me-2" type="search" placeholder="Search"
+            aria-label="Search" ;>
+            <button class="btn btn-outline-success" type="submit">
+              Search
+            </button>
+          </form>
+
+        </div>
+      </div>
+    </nav>
+
+    <!-- 表单内容 -->
+    <form
+      class="Categaryform"
+      action="/addgoods"
+      method="post"
+
+    >
+    <div>
+      <label for="gamename">Game Name:</label>
+      <input type="text" id="gameName" name="product_name"   required>
+    </div>
+      
+      <div>
+        <label for="description">Description:</label>
+        <textarea id="description" name="product_description"  required></textarea>
+      </div>
+      <div>
+        <label for="price">Price:</label>
+        <input type="text" id="price" name="product_price"  required>
+      </div>
+      <div>
+        <label for="_pricePromotion">Promotional Price:</label>
+        <input type="text" id="pricePromotion" name="product_price_promotion" required >
+      </div>
+      <div>
+        <label for="image">Upload Image:</label>
+        
+        <input type="file" id="image" name="product_images" multiple  required    enctype="multipart/form-data" >
+      
+    </div>
+    
+    <div>
+      <label for="category">Category:</label>
+      <select id="category" name="category_id" required>
+        <option value="FPS">FPS</option>
+        <option value="MOBA">MOBA</option>
+        <option value="RPG">RPG</option>
+        <option value="MMO">MMO</option>
+        <option value="RTX">RTX</option>
+      </select>
+    </div>
+
+
+      <br />
+      <br />
+      <div id="imagePreview" ></div>
+      <button class="categraysubmitbtn" type="submit">Submit</button>
+    </form>
+
+
+    <script>
+        // 获取上传的图像输入字段
+        const imageInput = document.getElementById("image");
+        // 获取用于预览图像的区域
+        const imagePreview = document.getElementById("imagePreview");
+
+        // 添加事件监听器来监视图像输入字段的变化
+        imageInput.addEventListener("change", function () {
+          // 确保至少选择了一个文件
+          if (imageInput.files && imageInput.files.length > 0) {
+            // 循环遍历每个选定的文件（最多3个）
+            for (let i = 0; i < Math.min(imageInput.files.length, 3); i++) {
+              // 创建一个FileReader对象
+              const reader = new FileReader();
+              // 创建一个img元素
+              const img = document.createElement("img");
+              // 创建一个包含图片和删除按钮的div容器
+              const pictureDiv = document.createElement("div");
+              pictureDiv.classList.add("pictureContainer"); // 添加样式类
+
+              // 创建一个删除按钮
+              const deleteButton = document.createElement("button");
+              deleteButton.textContent = "Delete";
+              deleteButton.classList.add("deleteButton"); // 添加样式类
+
+              // 当文件读取完成时触发
+              reader.onload = function (e) {
+                // 设置img元素的src为读取到的图像数据
+                img.src = e.target.result;
+                img.style.width = "100px"; // 设置图片宽度为100px
+                img.style.height = "100px"; // 设置图片高度为100px
+              };
+
+              // 为删除按钮添加点击事件监听器
+              deleteButton.addEventListener("click", function () {
+                // 找到被点击按钮所在的图片容器并移除它
+                const parentContainer = this.parentNode;
+                imagePreview.removeChild(parentContainer);
+              });
+
+              // 读取选定的文件
+              reader.readAsDataURL(imageInput.files[i]);
+
+              // 将图片和删除按钮添加到图片容器中
+              pictureDiv.appendChild(img);
+              pictureDiv.appendChild(deleteButton);
+
+              // 将图片容器添加到预览区域
+              imagePreview.appendChild(pictureDiv);
+            }
+          }
+        });
+    </script>
+      
+  </body>
+</html>

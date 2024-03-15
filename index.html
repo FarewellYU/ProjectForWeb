@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login page</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <form id="loginform" action="/login"  method="post"
+        label-width="70px"
+        class="Login-container"
+    >
+        <h3 class="Login_title">Login with password</h3>
+        <!--账号-->
+
+        <div class="login">
+            <input
+                type="text"
+                placeholder="Input your Username"
+                id="username" name="username" required
+            ></input>
+
+            <br>
+            <br>
+            <!--密码-->
+            <input
+                type="password"
+                placeholder="Input your Password"
+                id="password" name="password"  required
+            ></input>
+
+            <br>
+            <br>
+            <div>
+                <button class="loginbtn" type="submit" class="btn btn-primary" name="login" value="LOGIN">Login</button>
+
+                <button onclick="window.location.href='/register'" class="registerbtn" type="submit" class="btn btn-primary" name="register" value="REGISTER">Register</button>
+            </div>
+        </div>
+        <!--登录按钮-->
+    </form>
+
+    <script>
+    </script>
+</body>
+</html>
