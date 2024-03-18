@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const mysql = require("mysql2");
 var path = require("path");
 const session = require("express-session");
+const axios = require("axios"); // 导入 axios 模块
 
 // 初始化Express应用程序
 const app = express();
@@ -145,7 +146,7 @@ app.post("/addgoods", (req, res) => {
     product_images,
     product_price_promotion,
   } = req.body;
- 
+
   // 假设用户已经登录，并且登录信息中包含了 user_id
   const user_id = req.session.user_id; // 这里假设通过 req.user 获取到了用户的登录信息
   // 查询登录表获取用户的user_id
@@ -170,10 +171,150 @@ app.post("/addgoods", (req, res) => {
         return;
       }
       console.log("Insertion results:", results); // 输出插入结果
-      res.send("Product inserted successfully!"); // 发送插入成功的消息
+      // 根据插入结果发送不同的消息
+      if (results.affectedRows > 0) {
+        // 如果受影响的行数大于0，则插入成功
+        res.send(
+          "<script>window.alert('添加成功'); window.location='/add';</script>"
+        ); // 发送JavaScript弹窗显示"添加成功"并执行前端重定向
+      } else {
+        // 否则，插入失败
+        res.send("<script>window.alert('添加失败');</script>"); // 发送JavaScript弹窗显示"添加失败"
+      }
+
+      // res.send("Product inserted successfully!"); // 发送插入成功的消息
     }
   );
 });
+
+app.get("/user/category", (req, res) => {
+  // 获取用户ID，假设它存储在 session 中的 user_id 中
+  var user_id = req.session.user_id; // 假设用户ID存储在 session 中的 user_id 变量中
+
+  if (!user_id) {
+    // 如果用户未登录，则发送一个错误响应
+    res.status(401).send("Please login to view products.");
+    return;
+  }
+
+  // 在数据库中查询用户的产品类别和类别名称
+  connection.query(
+    "SELECT category_id FROM products WHERE user_id = ?",
+    [user_id],
+    (err, results) => {
+      if (err) {
+        console.error("Error querying database: " + err.stack);
+        res.status(500).send("Internal Server Error");
+        return;
+      }
+
+      if (results.length === 0) {
+        // 如果未找到与用户关联的产品类别，则发送一个错误响应
+        res.status(404).send("Category ID not found for this user.");
+        return;
+      }
+
+      const categories = results.map((result) => result.category_id); // 提取类别 ID 数组
+
+      // 发送与用户关联的产品类别给客户端
+      res.json({ categories: categories }); // 返回包含类别数组的 JSON 对象
+    }
+  );
+});
+
+// 获取所有游戏信息
+
+app.get("/products", (req, res) => {
+  var user_id = req.session.user_id; // 假设用户ID存储在 session 中的 user_id 变量中
+
+  // 执行查询以检索特定用户的产品信息
+  connection.query(
+    "SELECT user_id, category_id, product_name, product_description, product_images, product_price, product_price_promotion FROM products WHERE user_id = ?",
+    [user_id],
+    (err, results) => {
+      if (err) {
+        console.error("Error querying database: " + err.stack);
+        res.status(500).send("Internal Server Error");
+        return;
+      }
+
+      // 将查询结果中的 BLOB 图像数据转换为 Base64 格式
+      results.forEach(function (product) {
+        if (product.product_images_base64) {
+          product.product_images_base64 =
+            product.product_images_base64.toString("base64");
+        }
+      });
+        console.log(results);
+      // 将查询结果发送给前端
+      console.log(results);
+      res.json(results);
+    }
+  );
+});
+
+// app.get('/games', (req, res) => {
+//   var user_id = req.session.user_id; // 假设用户ID存储在 session 中的 user_id 变量中
+//   // 在数据库中查询用户的产品类别和类别名称
+//   connection.query('SELECT category_id FROM products WHERE user_id = ?', [user_id], (err, results) => {
+//     if (err) {
+//       console.error('Error querying database: ' + err.stack);
+//       res.status(500).send('Internal Server Error');
+//       return;
+//     }
+
+//     if (results.length === 0) {
+//       // 如果未找到与用户关联的产品类别，则发送一个错误响应
+//       res.status(404).send('Category ID not found for this user.');
+//       return;
+//     }
+
+//     const categories = results.map(result => result.category_id); // 提取类别 ID 数组
+
+//     // 发送与用户关联的产品类别给客户端
+//     res.json({ categories: categories }); // 返回包含类别数组的 JSON 对象
+//   });
+// });
+
+// //图片展示区域
+// // 添加路由来处理 /carousel-images 路径
+// app.get('/carousel-images', (req, res) => {
+//   // 假设用户已经登录，并且登录信息中包含了 user_id
+//   const user_id = req.session.user_id; // 这里假设通过 req.user 获取到了用户的登录信息
+
+//   if (!user_id) {
+//     // 如果用户未登录，则发送一个错误响应
+//     res.status(401).send('Please login to view carousel images.');
+//     return;
+//   }
+
+//   // 在数据库中查询用户的产品图像
+//   connection.query('SELECT product_images FROM products WHERE user_id = ?', [user_id], (err, results) => {
+//     if (err) {
+//       console.error('Error querying database: ' + err.stack);
+//       res.status(500).send('Internal Server Error');
+//       return;
+//     }
+
+//     if (results.length === 0) {
+//       // 如果未找到与用户关联的产品图像，则发送一个错误响应
+//       res.status(404).send('Product images not found for this user.');
+//       return;
+//     }
+
+//     console.log(results);
+//        // 处理多张图片的情况
+//        const images = [];
+//        results.forEach(result => {
+//          // 转换 BLOB 数据为 Base64 编码的字符串
+//          const base64Data = Buffer.from(result.product_images).toString('base64');
+//          images.push({ product_image: `data:image/jpeg;base64,${base64Data}` });
+//        });
+
+//        res.json(images);
+
+//   });
+// });
 
 // 连接到MySQL
 connection.connect((err) => {

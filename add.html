@@ -11,6 +11,41 @@
       crossorigin="anonymous"
     />
     <link rel="stylesheet" href="style.css" />
+
+
+    <script>
+       // 使用 Fetch API 发送请求到服务器获取用户相关的产品信息
+    fetch('/user/category')
+    .then(function(response) {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(function(data) {
+      var categories = data.categories; // 提取类别数组
+
+      // 获取下拉菜单元素
+      var categoryMenu = document.getElementById('categoryMenu');
+
+      // 清空现有的菜单项
+      categoryMenu.innerHTML = '';
+
+      // 创建一个 Set 来存储唯一的类别
+      var uniqueCategories = new Set(categories);
+
+      // 从 Set 转换为数组以便迭代
+      Array.from(uniqueCategories).forEach(function(categoryId) {
+        // 创建菜单项
+        var listItem = document.createElement('li');
+        listItem.innerHTML = '<a class="dropdown-item" href="#">' + categoryId + '</a>';
+        categoryMenu.appendChild(listItem);
+      });
+    })
+    .catch(function(error) {
+      console.error('Fetch error:', error);
+    });
+       </script>
   </head>
   <body>
     <script
@@ -69,6 +104,7 @@
               >
             </li>
             &ensp;&ensp;&ensp;
+            <!-- 动态显示游戏种类 -->
             <li class="nav-item dropdown">
               <a
                 class="nav-link dropdown-toggle"
@@ -79,15 +115,9 @@
               >
                 Category
               </a>
-              <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#">Action</a></li>
-                <li><a class="dropdown-item" href="#">Another action</a></li>
-                <li><hr class="dropdown-divider" /></li>
-                <li>
-                  <a class="dropdown-item" href="#">Something else here</a>
-                </li>
-              </ul>
+              <ul class="dropdown-menu" id="categoryMenu"></ul>
             </li>
+            <!--  -->
             &ensp; &ensp;&ensp; &ensp;&ensp; &ensp; &ensp; &ensp;&ensp;
             &ensp;&ensp; &ensp; &ensp; &ensp;&ensp; &ensp;&ensp; &ensp; &ensp;
             &ensp;&ensp; &ensp;&ensp; &ensp; &ensp; &ensp;&ensp; &ensp;&ensp;
@@ -155,16 +185,8 @@
     
     <div>
       <label for="category">Category:</label>
-      <select id="category" name="category_id" required>
-        <option value="FPS">FPS</option>
-        <option value="MOBA">MOBA</option>
-        <option value="RPG">RPG</option>
-        <option value="MMO">MMO</option>
-        <option value="RTX">RTX</option>
-      </select>
+      <input type="text"  id="category"  name="category_id" required >
     </div>
-
-
       <br />
       <br />
       <div id="imagePreview" ></div>
