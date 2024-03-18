@@ -141,7 +141,7 @@ input {
     display: flex;
     flex-wrap: wrap;
     justify-content: center; /* 在水平方向上居中对齐 */
-    
+
   }
   
   .product-card {
@@ -158,4 +158,7 @@ input {
   
   .spacer {
     flex: auto; /* 占据剩余空间 */
+  }
+  body{
+    background-color: #aaa;
   }

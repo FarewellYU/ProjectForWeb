@@ -72,7 +72,7 @@
           />
         </a>
         <span id="navbar-text" style="font-size: 30px"
-          >&ensp; YaSuo Game Shop</span
+          >GTAShop</span
         >
         &ensp; &ensp;&ensp; &ensp;&ensp; &ensp;
 
@@ -99,17 +99,29 @@
                 >Home</a
               >
             </li>
-            &ensp; &ensp;&ensp;
+            &ensp;&ensp;&ensp;&ensp;
             <li class="nav-item">
               <a
                 class="nav-link active"
                 aria-current="page"
                 style="font-size: 30px"
                 href="#"
-                >My Cart</a
+                onclick="window.location.href='/cart'"
+                >MyCart</a
               >
             </li>
-            &ensp;&ensp;&ensp;
+            &ensp;&ensp;&ensp;&ensp;
+            <li class="nav-item">
+              <a
+                class="nav-link active"
+                aria-current="page"
+                style="font-size: 30px"
+                href="#"
+                onclick="window.location.href='/manage'"
+                >Management</a
+              >
+            </li>
+            &ensp;&ensp;&ensp;&ensp;
             <!-- 动态显示游戏种类 -->
             <li class="nav-item dropdown">
               <a
@@ -132,7 +144,7 @@
               <a
                 class="nav-link active"
                 aria-current="page"
-                style="font-size: 20px"
+                style="font-size: 30px"
                 href="#"
               >
                 <img
@@ -206,15 +218,39 @@
                     var promotion = document.createElement('p');
                     promotion.textContent = 'Promotion: ' + product.product_price_promotion;
                     card.appendChild(promotion);
+
+                    var count = document.createElement('p');
+                    promotion.textContent = 'Sales Count: ' + product.product_sales_count;
+                    card.appendChild(count);
           
                     // 创建购买按钮
                     var buyButton = document.createElement('button');
                     buyButton.textContent = 'Buy Now';
                     buyButton.addEventListener('click', function() {
-                      // 处理购买逻辑，例如跳转到结账页面或执行购买操作
-                      console.log('Buying product: ' + product.product_name);
-                    });
-                    card.appendChild(buyButton);
+                      fetch('/purchase', {
+            method: 'POST', // 使用POST方法发送请求
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ productId: product.product_id ,productName:product.product_name}) // 发送产品ID作为请求体
+          })
+          .then(function(response) {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then(function(data) {
+            console.log('Product purchased successfully:', data);
+          })
+          .catch(function(error) {
+            console.error('Purchase error:', error);
+          });
+        });
+        card.appendChild(buyButton);
+
+
+
           
                     // 创建加入购物车按钮
                     var addToCartButton = document.createElement('button');
