@@ -219,21 +219,21 @@
                     promotion.textContent = 'Promotion: ' + product.product_price_promotion;
                     card.appendChild(promotion);
 
-                    var count = document.createElement('p');
-                    promotion.textContent = 'Sales Count: ' + product.product_sales_count;
-                    card.appendChild(count);
+                    // var count = document.createElement('p');
+                    // promotion.textContent = 'Sales Count: ' + product.product_sales_count;
+                    // card.appendChild(count);
           
                     // 创建购买按钮
                     var buyButton = document.createElement('button');
                     buyButton.textContent = 'Buy Now';
                     buyButton.addEventListener('click', function() {
                       fetch('/purchase', {
-            method: 'POST', // 使用POST方法发送请求
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ productId: product.product_id ,productName:product.product_name}) // 发送产品ID作为请求体
-          })
+                     method: 'POST', // 使用POST方法发送请求
+                   headers: {
+                   'Content-Type': 'application/json'
+                  },
+                body: JSON.stringify({ productId:product.product_id ,productPricepromotion:product.product_price_promotion}) // 发送产品ID作为请求体
+            })
           .then(function(response) {
             if (!response.ok) {
               throw new Error('Network response was not ok');
@@ -255,11 +255,37 @@
                     // 创建加入购物车按钮
                     var addToCartButton = document.createElement('button');
                     addToCartButton.textContent = 'Add to Cart';
+                     addToCartButton.dataset.productId = product.product_id;
                     addToCartButton.addEventListener('click', function() {
-                      // 处理加入购物车逻辑，例如将产品添加到购物车中
-                      console.log('Adding product to cart: ' + product.product_name);
-                    });
-                    card.appendChild(addToCartButton);
+    var productId = this.dataset.productId;
+    console.log("Product ID:", productId);
+    console.log('Adding product to cart: ' + product.product_name);
+
+    // 创建XMLHttpRequest对象
+    var xhr = new XMLHttpRequest();
+
+    // 设置请求
+    xhr.open('POST', '/cart', true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    // 监听请求状态
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.status === 200) {
+                console.log('Product added to cart successfully.');
+                // 这里可以处理响应，例如更新购物车图标或显示成功消息
+            } else {
+                console.error('Error adding product to cart:', xhr.statusText);
+                // 处理添加产品到购物车时出现的错误
+            }
+        }
+    };
+
+                  // 发送请求
+                       xhr.send('productId=' + encodeURIComponent(productId));
+});
+
+                card.appendChild(addToCartButton);
                   });
           
                   // 将图片添加到信息卡片容器中

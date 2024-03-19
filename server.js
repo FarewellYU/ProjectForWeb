@@ -53,7 +53,14 @@ app.get("/cart", (req, res) => {
 app.get("/manage", (req, res) => {
   res.sendFile(__dirname + "/manage.html");
 });
-
+//购物车页面传参
+app.post('/cart', function(req, res) {
+  var productId = req.body.productId; // 从请求体中获取产品ID
+  // 在此处执行将产品添加到购物车的操作，比如将产品ID存储到数据库中
+  
+  // 发送响应，表示成功添加产品到购物车
+  res.status(200).json({ message: 'Product added to cart successfully' });
+});
 
 
 //登录验证
@@ -293,15 +300,16 @@ app.get("/management", (req, res) => {
     }
   );
 });
+
+//首页购买
 app.post('/purchase', (req, res) => {
-  const productId = req.body.productId; // 从请求体中获取产品ID
-  const productName = req.body.productName;
-  console.log(productId);
-  console.log(productName);
+  const productId = req.body.productId; 
+  const productPrice = req.body.productPricepromotion; 
+  var user_id = req.session.user_id; 
   // 尝试插入新记录，如果记录已存在则更新现有记录
   connection.query(
-    'INSERT INTO sales(product_id, product_sales_count) VALUES (?, 1) ON DUPLICATE KEY UPDATE product_sales_count = product_sales_count + 1',
-    [productId],
+    'INSERT INTO bill(user_id, product_id, number_of_item, bill_price) VALUES (?, ?, 1, ?) ',
+    [user_id,productId,productPrice,],
     (err, results) => {
       if (err) {
         console.error('Error inserting or updating sales record:', err);
