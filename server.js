@@ -131,18 +131,18 @@ app.post("/register", (req, res) => {
         }
       } else {
         // 如果用户名不存在，则创建新用户并返回成功消息
-        // connection.query(
-        //   "INSERT INTO login (username, password) VALUES (?, ?)",
-        //   [username, password],
-        //   (err, results) => {
-        //     if (err) {
-        //       console.error("Error inserting into database: " + err.stack);
-        //       res.status(500).send("Internal Server Error");
-        //       return;
-        //     }
-        //     res.send("User registered successfully!"); // 发送注册成功的消息
-        //   }
-        // );
+        connection.query(
+          "INSERT INTO login (username, password) VALUES (?, ?)",
+          [username, password],
+          (err, results) => {
+            if (err) {
+              console.error("Error inserting into database: " + err.stack);
+              res.status(500).send("Internal Server Error");
+              return;
+            }
+            res.send( "<script>window.alert('Register Sucessful!'); window.location='/';</script>");
+          }
+        );
       }
     }
   );
