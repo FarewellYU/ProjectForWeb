@@ -54,66 +54,108 @@ app.get("/manage", (req, res) => {
   res.sendFile(__dirname + "/manage.html");
 });
 
-//购物车页面传参
+//购物车页面
 app.post('/cart', function(req, res) {
-  var productId = req.body.productId; // Get product ID from request body
-  var user_id = req.session.user_id; // Assume user ID is stored in session variable user_id
-
-  connection.query(
-    "SELECT * FROM cart WHERE user_id = ? AND product_id = ?",
-    [user_id, productId],
-    (err, results) => {
-      if (err) {
-        console.error("Error querying database: " + err.stack);
-        res.status(500).send("Internal Server Error");
-        return;
-      }
-
-      if (results.length > 0) {
-        res.send("window.alert('This game already exists!');");
-      } else {
-        // Entry doesn't exist for user_id and product_id, proceed to insert
-        connection.query(
-          "INSERT INTO cart (user_id, product_id) VALUES (?, ?)",
-          [user_id, productId],
-          (err, results) => {
-            if (err) {
-              console.error("Error inserting into database: " + err.stack);
-              res.status(500).send("Internal Server Error");
-              return;
-            }
-            res.send("Add into cart successful!");
-          }
-        );
-      }
-    }
-  );
-});
-//购物车查找
-app.get("/cart", (req, res) => {
+  var productId = req.body.productId; // 从请求体中获取产品ID
   var user_id = req.session.user_id; // 假设用户ID存储在 session 中的 user_id 变量中
+  console.log(productId, user_id);
+      // 查询购物车
+      connection.query(
+        "SELECT * FROM cart WHERE user_id = ? AND product_id = ?",
+        [user_id, productId],
+        (err, results) => {
+          if (err) {
+            console.error("Error querying database: " + err.stack);
+            res.status(500).send("Internal Server Error");
+            return;
+          }
 
-  // 执行查询以检索特定用户的产品信息
+          if (results.length > 0) {
+            // 如果购物车中已经存在相同的产品，则直接发送消息给客户端
+            connection.query(
+              "SELECT * FROM products WHERE user_id = ? AND product_id = ?",
+              [user_id, productId],
+              (err, productResults) => {
+                if (err) {
+                  console.error("Error querying products database: " + err.stack);
+                  res.status(500).send("Internal Server Error");
+                  return;
+                }
+                // 将查询结果发送给前端
+                console.log(productResults);
+                res.status(200).json({
+                  message: "This game already exists in your cart!",
+                  products: productResults
+                });
+              }
+            );
+          } else {
+            // 如果购物车中不存在相同的产品，则执行插入操作
+            connection.query(
+              "INSERT INTO cart (user_id, product_id) VALUES (?, ?)",
+              [user_id, productId],
+              (err, insertResults) => {
+                if (err) {
+                  console.error("Error inserting into database: " + err.stack);
+                  res.status(500).send("Internal Server Error");
+                  return;
+                }
+                // 插入成功后，再次查询购物车中新增产品的信息并将其发送给客户端
+                connection.query(
+                  "SELECT * FROM products WHERE user_id = ? AND product_id = ?",
+                  [user_id, productId],
+                  (err, productResults) => {
+                    if (err) {
+                      console.error("Error querying products database: " + err.stack);
+                      res.status(500).send("Internal Server Error");
+                      return;
+                    }
+                    // 将查询结果发送给前端
+                    console.log(productResults);
+                    res.status(200).json({
+                      message: "Game added to cart successfully!",
+                      products: productResults
+                    });
+                  }
+                );
+              }
+            );
+          }
+        }
+      );
+});
+
+//GetAll cart
+app.get('/allcarts', function(req, res) {
+  var user_id = req.session.user_id; // 假设用户ID存储在 session 中的 user_id 变量中
+  console.log("User ID:", user_id);
+
+  // 查询购物车
   connection.query(
     "SELECT * FROM cart WHERE user_id = ?",
     [user_id],
     (err, cartResults) => {
+      console.log(cartResults);
       if (err) {
         console.error("Error querying cart database: " + err.stack);
         res.status(500).send("Internal Server Error");
         return;
       }
 
-      // 如果购物车中没有产品，直接返回空数组
+      // 没有购物车记录
       if (cartResults.length === 0) {
-        res.json([]);
+        console.log("No items in the cart for user:", user_id);
+        res.status(200).json({
+          message: "No items in the cart for this user",
+          cart: []
+        });
         return;
       }
 
-      // 从购物车查询结果中提取所有产品的 product_id
+      // 从购物车中提取 product_id 列表
       var productIds = cartResults.map(cartItem => cartItem.product_id);
 
-      // 查询产品表中与购物车产品对应的记录
+      // 查询对应产品的详细信息
       connection.query(
         "SELECT * FROM products WHERE user_id = ? AND product_id IN (?)",
         [user_id, productIds],
@@ -124,11 +166,48 @@ app.get("/cart", (req, res) => {
             return;
           }
 
-          // 将查询结果发送给前端
-          console.log(productResults);
-          res.json(productResults);
+          // 构建一个 map 以便于通过 product_id 查找产品信息
+          var productMap = {};
+          productResults.forEach(product => {
+            productMap[product.product_id] = product;
+          });
+
+          // 将购物车中的产品和对应的产品信息进行匹配
+          var cartWithDetails = cartResults.map(cartItem => {
+            return {
+              cartItem: cartItem,
+              productDetails: productMap[cartItem.product_id]
+            };
+          });
+
+          console.log("Cart with details:", cartWithDetails);
+          res.status(200).json({
+            message: "Cart details retrieved successfully",
+            cart: cartWithDetails
+          });
         }
       );
+    }
+  );
+});
+
+//删除购物车
+// 路由来处理删除购物车项的请求
+app.post('/deleteCartItem', (req, res) => {
+  // 从请求体中获取用户 ID 和产品 ID
+  const { productId } = req.body;
+  var user_id = req.session.user_id; // 假设用户ID存储在 session 中的 user_id 变量中
+  console.log(user_id, productId)
+  connection.query(
+    "DELETE FROM cart WHERE user_id = ? AND product_id = ?",
+    [user_id, productId],
+    (err, results) => {
+      if (err) {
+        console.error("Error deleting from database: " + err.stack);
+        res.status(500).send("Internal Server Error");
+        return;
+      }
+      res.send("<script>window.alert('Item deleted from cart!'); window.location='/';</script>");
     }
   );
 });
@@ -336,7 +415,7 @@ app.get("/products", (req, res) => {
       });
 
       // 将查询结果发送给前端
-      console.log(results);
+      // console.log(results);
       res.json(results);
     }
   );
@@ -392,57 +471,6 @@ app.post('/purchase', (req, res) => {
     }
   );
 });
-// app.post('/purchase', (req, res) => {
-//   const productId = req.body.productId; // 从请求体中获取产品ID
-//   const productName = req.body.productName; // 从请求体中获取产品名称
-//   console.log(productName);
-
-//   // 查询sales表中是否存在该产品的记录
-//   connection.query(
-//     'SELECT * FROM sales WHERE product_id = ?',
-//     [productId, productName],
-//     (err, results) => {
-//       if (err) {
-//         console.error('Error checking sales:', err);
-//         res.status(500).json({ error: 'Internal Server Error' });
-//         return;
-//       }
-
-//       // 如果结果为空，说明sales表中不存在该产品的记录，则插入一条新记录
-//       if (results.length === 0) {
-//         connection.query(
-//           'INSERT INTO sales(product_id, product_name, product_sales_count) VALUES (?, ?, ?)',
-//           [productId, productName, 1], // 插入新记录时，初始销售数量为1
-//           (err, results) => {
-//             if (err) {
-//               console.error('Error inserting new sales record:', err);
-//               res.status(500).json({ error: 'Internal Server Error' });
-//               return;
-//             }
-//             console.log('New sales record inserted successfully');
-//             res.json({ success: true }); // 返回成功响应给客户端
-//           }
-//         );
-//       } else {
-//         // 如果结果不为空，则更新现有记录的销售数量
-//         connection.query(
-//           'UPDATE sales SET product_sales_count = product_sales_count + 1 WHERE product_id = ?',
-//           [productId],
-//           (err, results) => {
-//             if (err) {
-//               console.error('Error updating sales record:', err);
-//               res.status(500).json({ error: 'Internal Server Error' });
-//               return;
-//             }
-//             console.log('Sales record updated successfully');
-//             res.json({ success: true }); // 返回成功响应给客户端
-//           }
-//         );
-//       }
-//     }
-//   );
-// });
-
 // 连接到MySQL
 connection.connect((err) => {
   if (err) {

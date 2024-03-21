@@ -162,3 +162,29 @@ input {
   body{
     background-color: #aaa;
   }
+
+
+
+
+  #cartTable {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  #cartTable th,
+  #cartTable td {
+    padding: 8px;
+    text-align: left;
+  }
+  
+  #cartTable th {
+    background-color: #f2f2f2;
+  }
+  
+  #cartTable tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  #cartTable tbody tr:hover {
+    background-color: #ddd;
+  }
