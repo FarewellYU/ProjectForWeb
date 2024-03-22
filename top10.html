@@ -3,19 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Add Game</title>
+    <title>Top</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
       rel="stylesheet"
       integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="style.css" />
-
+    <link rel="stylesheet" href="style.css">
 
     <script>
-       // 使用 Fetch API 发送请求到服务器获取用户相关的产品信息
-    fetch('/user/category')
+    // 使用 Fetch API 发送请求到服务器获取用户相关的产品信息
+      fetch('/user/category')
     .then(function(response) {
       if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -41,11 +40,55 @@
         listItem.innerHTML = '<a class="dropdown-item" href="#">' + categoryId + '</a>';
         categoryMenu.appendChild(listItem);
       });
+      })
+      .catch(function(error) {
+        console.error('Fetch error:', error);
+       });
+
+
+
+
+       //插入累加的销售数量
+    fetch('/topsales', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    })
+    .then(function(response) {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json(); // 解析响应的 JSON 数据
+    })
+    .then(function(data) {
+        console.log('Server response:', data); // 打印从服务器接收到的数据
+        // 在页面中展示购买成功消息或其他信息
     })
     .catch(function(error) {
-      console.error('Fetch error:', error);
+        console.error('Purchase error:', error);
+        // 在页面中展示购买失败消息或其他错误信息
     });
-       </script>
+
+     // 发起请求获取数据
+    // 发起请求获取数据
+    fetch('/consequence')
+            .then(response => response.json())
+            .then(data => {
+                // 获取前 10 个产品
+                const top10Products = data.sales.slice(0, 10);
+
+                // 将产品名称显示在页面上
+                const productList = document.getElementById('productList');
+                top10Products.forEach((product, index) => {
+                    const listItem = document.createElement('div'); // 使用 div 元素替代 li 元素
+                    listItem.classList.add('productItem'); // 添加自定义类以应用样式
+                    listItem.textContent = `${index + 1}. ${product.product_name}`; // 添加排名
+                    productList.appendChild(listItem);
+                });
+            })
+            .catch(error => console.error('Error fetching data:', error));
+     </script>
   </head>
   <body>
     <script
@@ -129,16 +172,17 @@
               </a>
               <ul class="dropdown-menu" id="categoryMenu"></ul>
             </li>
+
             <li class="nav-item">
-              <a
-                class="nav-link active"
-                aria-current="page"
-                style="font-size: 30px"
-                href="#"
-                onclick="window.location.href='/top'"
-                >Top10</a
-              >
-            </li>
+                <a
+                  class="nav-link active"
+                  aria-current="page"
+                  style="font-size: 30px"
+                  href="#"
+                  onclick="window.location.href='/top'"
+                  >Top10</a
+                >
+              </li>
             <!--  -->
             &ensp; &ensp;&ensp; &ensp;&ensp; &ensp; &ensp; &ensp;&ensp;
             &ensp;&ensp; &ensp; &ensp; &ensp;&ensp; &ensp;&ensp; &ensp; &ensp;
@@ -163,104 +207,17 @@
             </li>
           
           </ul>
+       
+        
           </nav>
 
 
-    <!-- 表单内容 -->
-    <form
-      class="Categaryform"
-      action="/addgoods"
-      method="post"
-
-    >
-    <div>
-      <label for="gamename">Game Name:</label>
-      <input type="text" id="gameName" name="product_name"   required>
-    </div>
-      
-      <div>
-        <label for="description">Description:</label>
-        <textarea id="description" name="product_description"  required></textarea>
-      </div>
-      <div>
-        <label for="price">Price:</label>
-        <input type="text" id="price" name="product_price"  required>
-      </div>
-      <div>
-        <label for="_pricePromotion">Promotional Price:</label>
-        <input type="text" id="pricePromotion" name="product_price_promotion" required >
-      </div>
-      <div>
-        <label for="image">Upload Image:</label>
-        
-        <input type="file" id="image" name="product_images" multiple  required    enctype="multipart/form-data" >
-      
-    </div>
+   
     
-    <div>
-      <label for="category">Category:</label>
-      <input type="text"  id="category"  name="category_id" required >
-    </div>
-      <br />
-      <br />
-      <div id="imagePreview" ></div>
-      <button class="categraysubmitbtn" type="submit">Submit</button>
-    </form>
-
-
-    <script>
-        // 获取上传的图像输入字段
-        const imageInput = document.getElementById("image");
-        // 获取用于预览图像的区域
-        const imagePreview = document.getElementById("imagePreview");
-
-        // 添加事件监听器来监视图像输入字段的变化
-        imageInput.addEventListener("change", function () {
-          // 确保至少选择了一个文件
-          if (imageInput.files && imageInput.files.length > 0) {
-            // 循环遍历每个选定的文件（最多3个）
-            for (let i = 0; i < Math.min(imageInput.files.length, 3); i++) {
-              // 创建一个FileReader对象
-              const reader = new FileReader();
-              // 创建一个img元素
-              const img = document.createElement("img");
-              // 创建一个包含图片和删除按钮的div容器
-              const pictureDiv = document.createElement("div");
-              pictureDiv.classList.add("pictureContainer"); // 添加样式类
-
-              // 创建一个删除按钮
-              const deleteButton = document.createElement("button");
-              deleteButton.textContent = "Delete";
-              deleteButton.classList.add("deleteButton"); // 添加样式类
-
-              // 当文件读取完成时触发
-              reader.onload = function (e) {
-                // 设置img元素的src为读取到的图像数据
-                img.src = e.target.result;
-                img.style.width = "100px"; // 设置图片宽度为100px
-                img.style.height = "100px"; // 设置图片高度为100px
-              };
-
-              // 为删除按钮添加点击事件监听器
-              deleteButton.addEventListener("click", function () {
-                // 找到被点击按钮所在的图片容器并移除它
-                const parentContainer = this.parentNode;
-                imagePreview.removeChild(parentContainer);
-              });
-
-              // 读取选定的文件
-              reader.readAsDataURL(imageInput.files[i]);
-
-              // 将图片和删除按钮添加到图片容器中
-              pictureDiv.appendChild(img);
-              pictureDiv.appendChild(deleteButton);
-
-              // 将图片容器添加到预览区域
-              imagePreview.appendChild(pictureDiv);
-            }
-          }
-        });
-    </script>
-      
+          <div id="productTables" style="display: flex; flex-wrap: wrap; justify-content: center;" class="product-container"></div>
+          <h1 class="listname">Top 10 Products</h1>
+         <div  id="productList"></div>
+ 
+        
   </body>
 </html>

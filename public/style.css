@@ -188,3 +188,34 @@ input {
   #cartTable tbody tr:hover {
     background-color: #ddd;
   }
+
+
+
+  
+  #productList {
+      text-align: center; /* 让文本居中显示 */
+      font-family: Arial, sans-serif; /* 使用 Arial 字体 */
+      display: flex; /* 使用 flex 布局 */
+      flex-direction: column; /* 垂直排列 */
+      align-items: center; /* 在交叉轴上居中对齐 */
+
+  }
+  
+  .listname{
+    text-align: center; /* 让文本居中显示 */
+  }
+
+  .productItem {
+    font-size: 3em; /* 增大字体 */
+    margin-bottom: 10px; /* 添加底部间距 */
+}
+
+.rank {
+    font-weight: bold; /* 加粗字体 */
+    margin-right: 5px; /* 添加右侧间距 */
+    color: #333; /* 设置颜色 */
+}
+
+.productName {
+    color: #666; /* 设置颜色 */
+}

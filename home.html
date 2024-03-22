@@ -128,6 +128,16 @@
               </a>
               <ul class="dropdown-menu" id="categoryMenu"></ul>
             </li>
+            <li class="nav-item">
+              <a
+                class="nav-link active"
+                aria-current="page"
+                style="font-size: 30px"
+                href="#"
+                onclick="window.location.href='/top'"
+                >Top10</a
+              >
+            </li>
             <!--  -->
             &ensp; &ensp;&ensp; &ensp;&ensp; &ensp; &ensp; &ensp;&ensp;
             &ensp;&ensp; &ensp; &ensp; &ensp;&ensp; &ensp;&ensp; &ensp; &ensp;
@@ -152,147 +162,230 @@
             </li>
           
           </ul>
-          <form class="d-flex" role="search">
-            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" ;">
-            <button class="btn btn-outline-success" type="submit">Search</button>
-          </form>
-        
+          <!-- <div id="map"></div> -->
           </nav>
-
-
-   
-    
+          <div id="map"></div>
           <div id="productTables" style="display: flex; flex-wrap: wrap; justify-content: center;" class="product-container"></div>
 
           <script>
             fetch('/products') // 获取产品信息
-              .then(function(response) {
-                if (!response.ok) {
-                  throw new Error('Network response was not ok');
-                }
-                return response.json();
-              })
-              .then(function(products) {
-                // 获取包含表格的容器元素
-                var container = document.getElementById('productTables');
-          
-                // 遍历产品信息并为每个产品创建一个信息卡片
-                products.forEach(function(product, index) {
-                  // 创建一个 div 元素作为信息卡片容器
-                  var card = document.createElement('div');
-                  card.classList.add('product-card');
-                  container.appendChild(card);
-          
-                  // 创建图片元素并设置属性
-                  var image = document.createElement('img');
-                  image.src = 'data:image/png;base64,' + product.product_images_base64; // 图片Base64编码数据
-                  image.alt = product.product_name;
-                  card.appendChild(image);
-                  // 添加点击事件，展示其他信息
-                  image.addEventListener('click', function() {
-                    // 清除容器中的内容
-                    while (card.firstChild) {
-                      card.removeChild(card.firstChild);
+                .then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
                     }
-          
-                    // 创建其他信息元素
-                    var name = document.createElement('p');
-                    name.textContent = 'Game Name: ' + product.product_name;
-                    card.appendChild(name);
-          
-                    var description = document.createElement('p');
-                    description.textContent = 'Description: ' + product.product_description;
-                    card.appendChild(description);
-          
-                    var price = document.createElement('p');
-                    price.textContent = 'Price: ' + product.product_price;
-                    card.appendChild(price);
-          
-                    var promotion = document.createElement('p');
-                    promotion.textContent = 'Promotion: ' + product.product_price_promotion;
-                    card.appendChild(promotion);
+                    return response.json();
+                })
+                .then(function(products) {
+                    // 获取包含表格的容器元素
+                    var container = document.getElementById('productTables');
+            
+                    // 遍历产品信息并为每个产品创建一个信息卡片
+                    products.forEach(function(product, index) {
+                        // 创建一个 div 元素作为信息卡片容器
 
-                    // var count = document.createElement('p');
-                    // promotion.textContent = 'Sales Count: ' + product.product_sales_count;
-                    // card.appendChild(count);
-          
-                    // 创建购买按钮
-                    var buyButton = document.createElement('button');
-                    buyButton.textContent = 'Buy Now';
-                    buyButton.addEventListener('click', function() {
-                      fetch('/purchase', {
-                     method: 'POST', // 使用POST方法发送请求
-                   headers: {
-                   'Content-Type': 'application/json'
-                  },
-                body: JSON.stringify({ productId:product.product_id ,productPricepromotion:product.product_price_promotion}) // 发送产品ID作为请求体
-            })
-          .then(function(response) {
+                        var card = document.createElement('div');
+                        card.classList.add('product-card');
+                        container.appendChild(card);
+            
+
+                        if (Array.isArray(product.product_images)) {
+        // 如果是数组，遍历图片数据并创建相应的图片元素
+                product.product_images.forEach(function(imageData) {
+            var image = document.createElement('img');
+            image.src = 'data:image/png;base64,' + imageData; // 使用 Base64 编码的图片数据
+            image.alt = product.product_name;
+            card.appendChild(image);
+            console.log(image);
+        });
+           } else {
+        // 如果不是数组，假设图片数据是单个 Base64 编码的字符串
+        var image = document.createElement('img');
+        image.src = 'data:image/png;base64,' + product.product_images;
+        image.alt = product.product_name;
+        card.appendChild(image);
+        console.log(image);
+    }
+                      // 添加点击事件，展示其他信息
+        card.addEventListener('click', function() {
+    // 清除容器中的内容
+        while (card.firstChild) {
+        card.removeChild(card.firstChild);
+     }
+
+    // 创建其他信息元素
+    var name = document.createElement('p');
+    name.textContent = 'Game Name: ' + product.product_name;
+    card.appendChild(name);
+
+    var description = document.createElement('p');
+    description.textContent = 'Description: ' + product.product_description;
+    card.appendChild(description);
+
+    var price = document.createElement('p');
+    price.textContent = 'Price: ' + product.product_price;
+    card.appendChild(price);
+
+    var promotion = document.createElement('p');
+    promotion.textContent = 'Promotion: ' + product.product_price_promotion;
+    card.appendChild(promotion);
+
+    // creat buy bbootn
+    var buyButton = document.createElement('button');
+    buyButton.textContent = 'Buy Now';
+    buyButton.addEventListener('click', function() {
+        fetch('/purchase', {
+            method: 'POST', // 使用POST方法发送请求
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ productId: product.product_id, productPricepromotion: product.product_price_promotion }) // 发送产品ID作为请求体
+        })
+        .then(function(response) {
             if (!response.ok) {
-              throw new Error('Network response was not ok');
+                throw new Error('Network response was not ok');
             }
             return response.json();
-          })
-          .then(function(data) {
+        })
+        .then(function(data) {
+            alert(data.message);
             console.log('Product purchased successfully:', data);
-          })
-          .catch(function(error) {
+        })
+        .catch(function(error) {
             console.error('Purchase error:', error);
-          });
         });
-        card.appendChild(buyButton);
+    });
+    card.appendChild(buyButton);
 
+    // 创建加入购物车按钮
+    var addToCartButton = document.createElement('button');
+    addToCartButton.textContent = 'Add to Cart';
+    addToCartButton.dataset.productId = product.product_id;
+    addToCartButton.addEventListener('click', function() {
+        var productId = this.dataset.productId;
+        console.log("Product ID:", productId);
+        console.log('Adding product to cart: ' + product.product_name);
 
+        // 创建 XMLHttpRequest 对象
+        var xhr = new XMLHttpRequest();
 
-          
-          // 创建加入购物车按钮
-         var addToCartButton = document.createElement('button');
-         addToCartButton.textContent = 'Add to Cart';
-         addToCartButton.dataset.productId = product.product_id;
-         addToCartButton.addEventListener('click', function() {
-         var productId = this.dataset.productId;
-         console.log("Product ID:", productId);
-         console.log('Adding product to cart: ' + product.product_name);
+        // 设置请求
+        xhr.open('POST', '/cart', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
-         // 创建 XMLHttpRequest 对象
-         var xhr = new XMLHttpRequest();
-
-         // 设置请求
-          xhr.open('POST', '/cart', true);
-         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
-         // 监听请求状态
-         xhr.onreadystatechange = function() {
-          if (xhr.readyState === XMLHttpRequest.DONE) {
-            if (xhr.status === 200) { 
-                // console.log('Product added to cart successfully.');
-                // 这里可以处理响应，例如更新购物车图标或显示成功消息
-            } else {
-                console.error('Error adding product to cart:', xhr.statusText);
-                // 处理添加产品到购物车时出现的错误
+        // 监听请求状态
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) { 
+                    // console.log('Product added to cart successfully.');
+                    // 这里可以处理响应，例如更新购物车图标或显示成功消息
+                } else {
+                    console.error('Error adding product to cart:', xhr.statusText);
+                    // 处理添加产品到购物车时出现的错误
+                }
             }
-        }
-    };
+        };
 
-             // 发送请求
-       xhr.send('productId=' + encodeURIComponent(productId));
-                     });
+        // 发送请求
+        xhr.send('productId=' + encodeURIComponent(productId));
+    });
 
-                    card.appendChild(addToCartButton);
-                  });
-          
-                  // 将图片添加到信息卡片容器中
-                  card.appendChild(image);
-          
-                  // 创建间隔元素
-                  var spacer = document.createElement('div');
-                  spacer.classList.add('spacer');
-                  container.appendChild(spacer);
+    card.appendChild(addToCartButton);
+});
+                       // 创建图片元素并设置属性
+   
+
+
+                        // // 创建图片元素并设置属性
+                        // var image = document.createElement('img');
+                        // image.src = 'data:image/png;base64,' + product.product_images; // 使用 Base64 编码的图片数据
+                        // image.alt = product.product_name;
+                        // card.appendChild(image);
+                        // console.log(image); 
+            
+                        // 添加点击事件，展示其他信息
+            
+            
+                        // 创建间隔元素
+                        var spacer = document.createElement('div');
+                        spacer.classList.add('spacer');
+                        container.appendChild(spacer);
+                    });
+                })
+                .catch(function(error) {
+                    console.error('Fetch error:', error);
                 });
-              })
-              .catch(function(error) {
-                console.error('Fetch error:', error);
-              });
-          </script>
+
+               //地图
+               function initMap() {
+      var map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 15
+      });
+
+      // 尝试获取用户当前位置
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          var pos = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+
+          // 在地图上显示用户当前位置
+          map.setCenter(pos);
+          var marker = new google.maps.Marker({
+            position: pos,
+            map: map
+          });
+        }, function() {
+          handleLocationError(true, map.getCenter());
+        });
+      } else {
+        // 浏览器不支持Geolocation
+        handleLocationError(false, map.getCenter());
+      }
+    }
+
+    function handleLocationError(browserHasGeolocation, pos) {
+      // 处理定位错误
+      var infoWindow = new google.maps.InfoWindow({
+        content: (browserHasGeolocation ?
+          'Error: 定位失败.' :
+          'Error: 你的浏览器不支持地理定位服务.')
+      });
+      var marker = new google.maps.Marker({
+        position: pos,
+        map: map
+      });
+      infoWindow.open(map, marker);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        </script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBHyKXhwil46KfAGx7SmI7Lj7Q2qxrYhs4&libraries=places&callback=initMap&v=weekly" async defer></script>
+        
   </body>
 </html>

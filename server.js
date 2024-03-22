@@ -53,8 +53,14 @@ app.get("/cart", (req, res) => {
 app.get("/manage", (req, res) => {
   res.sendFile(__dirname + "/manage.html");
 });
+//Top 10 sale game
+//添加游戏页面
+app.get("/top", (req, res) => {
+  res.sendFile(__dirname + "/top10.html");
+});
 
-//购物车页面
+
+//cart
 app.post('/cart', function(req, res) {
   var productId = req.body.productId; // 从请求体中获取产品ID
   var user_id = req.session.user_id; // 假设用户ID存储在 session 中的 user_id 变量中
@@ -191,8 +197,7 @@ app.get('/allcarts', function(req, res) {
   );
 });
 
-//删除购物车
-// 路由来处理删除购物车项的请求
+//cart function delete
 app.post('/deleteCartItem', (req, res) => {
   // 从请求体中获取用户 ID 和产品 ID
   const { productId } = req.body;
@@ -213,7 +218,7 @@ app.post('/deleteCartItem', (req, res) => {
 });
 
 
-//登录验证
+//Login 
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
 
@@ -243,10 +248,9 @@ app.post("/login", (req, res) => {
     }
   );
 });
-
+//account register
 app.post("/register", (req, res) => {
   const { username, password } = req.body;
-
   // 检查用户名是否已经存在
   connection.query(
     "SELECT * FROM login WHERE username = ?",
@@ -305,6 +309,7 @@ app.post("/register", (req, res) => {
   );
 });
 
+//add game
 app.post("/addgoods", (req, res) => {
   const {
     product_name,
@@ -355,6 +360,7 @@ app.post("/addgoods", (req, res) => {
   );
 });
 
+ //navagate category dynamic
 app.get("/user/category", (req, res) => {
   // 获取用户ID，假设它存储在 session 中的 user_id 中
   var user_id = req.session.user_id; // 假设用户ID存储在 session 中的 user_id 变量中
@@ -391,37 +397,36 @@ app.get("/user/category", (req, res) => {
 });
 
 
-// 获取首页推送
+// home page send game
 app.get("/products", (req, res) => {
   var user_id = req.session.user_id; // 假设用户ID存储在 session 中的 user_id 变量中
-
+  
   // 执行查询以检索特定用户的产品信息
   connection.query(
-    "SELECT p.user_id, p.product_id, p.category_id, p.product_name, p.product_description, p.product_images, p.product_price, p.product_price_promotion, s.product_sales_count FROM products p LEFT JOIN sales s ON p.product_id = s.product_id WHERE p.user_id = ? ORDER BY RAND() LIMIT 4",
-    [user_id],
-    (err, results) => {
-      if (err) {
-        console.error("Error querying database: " + err.stack);
-        res.status(500).send("Internal Server Error");
-        return;
+      "SELECT p.user_id, p.product_id, p.category_id, p.product_name, p.product_description, p.product_images, p.product_price, p.product_price_promotion, s.product_sales_count FROM products p LEFT JOIN sales s ON p.product_id = s.product_id WHERE p.user_id = ? ORDER BY RAND() LIMIT 4",
+      [user_id],
+      (err, results) => {
+          if (err) {
+              console.error("Error querying database: " + err.stack);
+              res.status(500).send("Internal Server Error");
+              return;
+          }
+
+          // 将图片数据转换为Base64编码的字符串
+          results.forEach(function(product) {
+              if (Buffer.isBuffer(product.product_images)) {
+                  // 将 Buffer 对象转换为 Base64 编码的字符串
+                  product.product_images = product.product_images.toString('base64');
+              }
+          });
+
+          // console.log(results);
+          res.json(results);
       }
-
-      // 将查询结果中的 BLOB 图像数据转换为 Base64 格式
-      results.forEach(function (product) {
-        if (product.product_images_base64) {
-          product.product_images_base64 =
-            product.product_images_base64.toString("base64");
-        }
-      });
-
-      // 将查询结果发送给前端
-      // console.log(results);
-      res.json(results);
-    }
   );
 });
 
-//管理页面所有游戏库
+//management
 app.get("/management", (req, res) => {
   var user_id = req.session.user_id; 
 
@@ -451,7 +456,7 @@ app.get("/management", (req, res) => {
   );
 });
 
-//首页购买
+//home page buy
 app.post('/purchase', (req, res) => {
   const productId = req.body.productId; 
   const productPrice = req.body.productPricepromotion; 
@@ -459,7 +464,41 @@ app.post('/purchase', (req, res) => {
   // 尝试插入新记录，如果记录已存在则更新现有记录
   connection.query(
     'INSERT INTO bill(user_id, product_id, number_of_item, bill_price) VALUES (?, ?, 1, ?) ',
-    [user_id,productId,productPrice,],
+    [user_id, productId, productPrice],
+    (err, results) => {
+      console.log(results);
+      if (err) {
+        console.error('Error inserting or updating sales record:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+        return;
+      }
+      console.log('Sales record inserted or updated successfully');
+      
+      // 构造包含购买信息的弹窗内容
+      const purchaseInfo = `You already purchased!，Product ID：${productId}，Price：${productPrice}`;
+      console.log('Purchase info:', purchaseInfo); // 添加调试信息
+      
+      const responseHtml = `
+        <script>
+          alert('${purchaseInfo}');
+        </script>
+      `;
+      console.log('Response HTML:', responseHtml); // 添加调试信息
+      res.json({ message: purchaseInfo });
+    }
+  );
+});
+
+//car ways buy games
+app.post('/cartbuy', (req, res) => {
+  const productId = req.body.productId;
+  const billprice = req.body.billprice;
+  const quantity = req.body.quantity;
+  var user_id = req.session.user_id;
+  // 尝试插入新记录，如果记录已存在则更新现有记录
+  connection.query(
+    'INSERT INTO bill(user_id, product_id, number_of_item, bill_price) VALUES (?, ?, ?, ?) ',
+    [user_id, productId, quantity, billprice],
     (err, results) => {
       if (err) {
         console.error('Error inserting or updating sales record:', err);
@@ -467,10 +506,115 @@ app.post('/purchase', (req, res) => {
         return;
       }
       console.log('Sales record inserted or updated successfully');
-      res.json({ success: true }); // 返回成功响应给客户端
+      
+      // 构造购买成功的消息
+      const purchaseInfo = {
+        message: '购买成功！',
+        productId: productId,
+        quantity: quantity,
+        billprice: billprice
+      };
+      res.json(purchaseInfo); // 返回购买成功的消息给客户端
     }
   );
 });
+
+// Selase Top 10 games
+app.get('/topsales', (req, res) => {
+  const user_id = req.session.user_id;
+  console.log(user_id);
+
+  // 查询销量前十的游戏，并将具有相同 product_id 的 number_of_item 相加
+  connection.query(
+      'SELECT product_id, SUM(number_of_item) AS total_items FROM bill WHERE user_id = ? GROUP BY product_id ORDER BY total_items DESC LIMIT 10',
+      [user_id],
+      (err, results) => {
+          if (err) {
+              console.error('Error querying top sales:', err);
+              res.status(500).json({ error: 'Internal Server Error' });
+              return;
+          }
+
+          // 使用 Promise.all 来等待所有更新查询完成
+          Promise.all(results.map((row) => {
+              const productId = row.product_id;
+              const totalItems = row.total_items;
+
+              // 返回一个 Promise
+              return new Promise((resolve, reject) => {
+                  // 更新 sales 表中的 product_sales_item，如果记录不存在则插入新记录
+                  connection.query(
+                      'INSERT INTO sales (user_id, product_id, product_sales_count) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE product_sales_count = ?',
+                      
+                      [user_id, productId, totalItems, totalItems],
+                      (err, results) => {
+                          if (err) {
+                              reject(err);
+                              return;
+                          }
+                          resolve();
+                      }
+                  );
+              });
+          })).then(() => {
+              // console.log('All sales records inserted or updated successfully');
+              res.json({ success: true }); // 返回成功响应给客户端
+          }).catch((err) => {
+              console.error('Error inserting or updating sales records:', err);
+              res.status(500).json({ error: 'Internal Server Error' });
+          });
+      }
+  );
+});
+
+
+//consequence rank
+app.get('/consequence', (req, res) => {
+  const user_id = req.session.user_id;
+
+  // 查询指定 user_id 的 sales 表数据，并按照 product_sales_count 进行降序排列
+  connection.query(
+    'SELECT product_id, product_sales_count FROM sales WHERE user_id = ? ORDER BY product_sales_count DESC',
+    [user_id],
+    (err, results) => {
+      console.log(results);
+      if (err) {
+        console.error('Error querying sales records:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+        return;
+      }
+
+      // 获取查询结果中的 product_id 序列
+      const productIds = results.map(record => record.product_id);
+
+      // 查询 products 表中对应 product_id 的产品名称，并按照 product_id 降序排列
+      connection.query(
+        'SELECT product_id, product_name FROM products WHERE product_id IN (?) ORDER BY FIELD(product_id, ?)',
+        [productIds, productIds],
+        (err, productResults) => {
+          if (err) {
+            console.error('Error querying product names:', err);
+            res.status(500).json({ error: 'Internal Server Error' });
+            return;
+          }
+
+          // 将产品名称与销售数量合并
+          const salesWithNames = productResults.map(product => {
+            const salesRecord = results.find(record => record.product_id === product.product_id);
+            return {
+              product_id: product.product_id,
+              product_name: product.product_name,
+              product_sales_count: salesRecord ? salesRecord.product_sales_count : 0
+            };
+          });
+          console.log(productResults);
+          res.json({ success: true, sales: salesWithNames });
+        }
+      );
+    }
+  );
+});
+
 // 连接到MySQL
 connection.connect((err) => {
   if (err) {

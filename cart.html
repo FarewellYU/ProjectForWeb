@@ -133,6 +133,16 @@
               </a>
               <ul class="dropdown-menu" id="categoryMenu"></ul>
             </li>
+            <li class="nav-item">
+              <a
+                class="nav-link active"
+                aria-current="page"
+                style="font-size: 30px"
+                href="#"
+                onclick="window.location.href='/top'"
+                >Top10</a
+              >
+            </li>
             <!--  -->
             &ensp; &ensp;&ensp; &ensp;&ensp; &ensp; &ensp; &ensp;&ensp;
             &ensp;&ensp; &ensp; &ensp; &ensp;&ensp; &ensp;&ensp; &ensp; &ensp;
@@ -157,11 +167,7 @@
             </li>
           
           </ul>
-          <form class="d-flex" role="search">
-            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" ;">
-            <button class="btn btn-outline-success" type="submit">Search</button>
-          </form>
-        
+
           </nav>
 
 
@@ -185,163 +191,159 @@
             </table>
           </div>
           <script>
-            fetch('/allcarts')
-              .then(function(response) {
-                if (!response.ok) {
-                  throw new Error('Network response was not ok');
-                }
-                return response.json();
-              })
-              .then(function(data) {
-                var cartItems = data.cart;
-                var tableBody = document.querySelector('#cartTable tbody');
-          
-                cartItems.forEach(function(cartItem) {
-                  var product = cartItem.productDetails;
-                  var quantity = cartItem.cartItem.quantity; // 添加了 quantity 字段
-          
-                  var row = document.createElement('tr');
-          
-                  // 添加产品图片单元格
-                  var imageCell = document.createElement('td');
-                  var img = document.createElement('img');
-                  img.src = 'data:image/jpeg;base64,' + product.product_images.toString('base64'); // 假设产品图片是 JPEG 格式
-                  img.width = 100; // 设置图片宽度，根据需要调整大小
-                  img.height = 100; // 设置图片高度，根据需要调整大小
-                  imageCell.appendChild(img);
-                  row.appendChild(imageCell);
-          
-                  var nameCell = document.createElement('td');
-                  nameCell.textContent = product.product_name;
-                  row.appendChild(nameCell);
-          
-                  var descriptionCell = document.createElement('td');
-                  descriptionCell.textContent = product.product_description;
-                  row.appendChild(descriptionCell);
-          
-                  var priceCell = document.createElement('td');
-                  priceCell.textContent = product.product_price;
-                  row.appendChild(priceCell);
-          
-                  var promotionCell = document.createElement('td');
-                  promotionCell.textContent = product.product_price_promotion;
-                  row.appendChild(promotionCell);
-          
-                  var quantityCell = document.createElement('td');
-                  var quantityInput = document.createElement('input');
-                  quantityInput.type = 'number';
-                  quantityInput.value = quantity;
-                  quantityInput.min = 1;
-                  quantityInput.addEventListener('change', function() {
-                    // 更新购物车中商品的数量
-                    updateCartItemQuantity(product.product_id, parseInt(this.value));
-                  });
-                  quantityCell.appendChild(quantityInput);
-                  row.appendChild(quantityCell);
-          
-                  var buyCell = document.createElement('td');
-                  var buyButton = document.createElement('button');
-                  buyButton.textContent = 'Buy';
-                  buyButton.addEventListener('click', function() {
-                    purchaseItem(product.product_id, quantity);
-                  });
-                  buyCell.appendChild(buyButton);
-                  row.appendChild(buyCell);
-          
-                  // 添加删除按钮
-                  var deleteCell = document.createElement('td');
-                  var deleteButton = document.createElement('button');
-                  deleteButton.textContent = 'Delete';
-                  deleteButton.addEventListener('click', function() {
-                    deleteCartItem(cartItem.cartItem.user_id, product.product_id);
-                  });
-                  deleteCell.appendChild(deleteButton);
-                  row.appendChild(deleteCell);
-          
-                  tableBody.appendChild(row);
-                });
-              })
-              .catch(function(error) {
-                console.error('Fetch error:', error);
-              });
-          
-            // 更新购物车中商品的数量
-            function updateCartItemQuantity(productId, quantity) {
-              fetch('/updateCartItemQuantity', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  productId: productId,
-                  quantity: quantity
-                })
-              })
-              .then(function(response) {
-                if (!response.ok) {
-                  throw new Error('Network response was not ok');
-                }
-                return response.json();
-              })
-              .then(function(data) {
-                console.log('Quantity updated successfully:', data);
-              })
-              .catch(function(error) {
-                console.error('Quantity update error:', error);
-              });
-            }
-          
-            // 购买商品
-            function purchaseItem(productId, quantity) {
-              fetch('/purchase', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  productId: productId,
-                  quantity: quantity
-                })
-              })
-              .then(function(response) {
-                if (!response.ok) {
-                  throw new Error('Network response was not ok');
-                }
-                return response.json();
-              })
-              .then(function(data) {
-                console.log('Item purchased successfully:', data);
-              })
-              .catch(function(error) {
-                console.error('Purchase error:', error);
-              });
-            }
-          
-            // 删除购物车项
-            function deleteCartItem(userId, productId) {
-              fetch('/deleteCartItem', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  userId: userId,
-                  productId: productId
-                })
-              })
-              .then(function(response) {
-                if (!response.ok) {
-                  throw new Error('Network response was not ok');
-                }
-                return response.json();
-              })
-              .then(function(data) {
-                console.log('Cart item deleted successfully:', data);
-              })
-              .catch(function(error) {
-                console.error('Delete cart item error:', error);
-              });
-            }
-          </script>
+      
+// 添加购买按钮事件监听器
+function addBuyButtonEventListeners(buyButton, productId, quantityInput, product) {
+    // 先移除之前已经存在的事件监听器，然后再添加新的事件监听器
+    buyButton.removeEventListener('click', buyButtonClickHandler);
+    buyButton.addEventListener('click', buyButtonClickHandler);
+
+    function buyButtonClickHandler() {
+        var updatedQuantity = parseInt(quantityInput.value);
+        purchaseItem(productId, updatedQuantity, updatedQuantity * product.product_price_promotion, function(data) {
+            const purchaseInfo = `Purchase successful. Product ID: ${data.productId}, Quantity: ${data.quantity}, Total price: ${data.billprice}`;
+            alert(purchaseInfo);
+        });
+    }
+}
+
+// 添加删除按钮事件监听器
+function addDeleteButtonEventListeners(deleteButton, userId, productId) {
+    deleteButton.addEventListener('click', function() {
+        deleteCartItem(userId, productId);
+    });
+}
+
+// 获取购物车数据并渲染到页面
+fetch('/allcarts')
+    .then(function(response) {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(function(data) {
+        var cartItems = data.cart;
+        var tableBody = document.querySelector('#cartTable tbody');
+
+        cartItems.forEach(function(cartItem) {
+            var product = cartItem.productDetails;
+            var quantity = cartItem.cartItem.quantity;
+
+            var row = document.createElement('tr');
+
+            // 添加产品图片单元格
+            var imageCell = document.createElement('td');
+            var img = document.createElement('img');
+            img.src = 'data:image/jpeg;base64,' + product.product_images; // 使用Base64编码的图片数据
+            img.width = 100;
+            img.height = 100;
+            imageCell.appendChild(img);
+            row.appendChild(imageCell);
+
+            // 添加其他单元格...
+            var nameCell = document.createElement('td');
+            nameCell.textContent = product.product_name;
+            row.appendChild(nameCell);
+
+            var descriptionCell = document.createElement('td');
+            descriptionCell.textContent = product.product_description;
+            row.appendChild(descriptionCell);
+
+            var priceCell = document.createElement('td');
+            priceCell.textContent = product.product_price;
+            row.appendChild(priceCell);
+
+            var promotionCell = document.createElement('td');
+            promotionCell.textContent = product.product_price_promotion;
+            row.appendChild(promotionCell);
+
+            var quantityCell = document.createElement('td');
+            var quantityInput = document.createElement('input');
+            quantityInput.type = 'number';
+            quantityInput.value = quantity;
+            quantityInput.min = 1;
+            quantityCell.appendChild(quantityInput);
+            row.appendChild(quantityCell);
+
+            // 添加购买按钮
+            var buyCell = document.createElement('td');
+            var buyButton = document.createElement('button');
+            buyButton.textContent = 'Buy';
+            addBuyButtonEventListeners(buyButton, product.product_id, quantityInput, product); // 添加购买按钮的事件监听器
+            buyCell.appendChild(buyButton);
+            row.appendChild(buyCell);
+
+            // 添加删除按钮
+            var deleteCell = document.createElement('td');
+            var deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            addDeleteButtonEventListeners(deleteButton, cartItem.cartItem.user_id, product.product_id); // 添加删除按钮的事件监听器
+            deleteCell.appendChild(deleteButton);
+            row.appendChild(deleteCell);
+
+            tableBody.appendChild(row);
+        });
+    })
+    .catch(function(error) {
+        console.error('Fetch error:', error);
+    });
+
+// 更新购物车中商品的数量
+function purchaseItem(productId, quantity, price, callback) {
+    fetch('/cartbuy', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            productId: productId,
+            quantity: quantity,
+            billprice: quantity * price // 使用传入的价格参数计算账单价格
+        })
+    })
+    .then(function(response) {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(function(data) {
+        // 购买成功时调用回调函数
+        callback(data);
+    })
+    .catch(function(error) {
+        console.error('Quantity update error:', error);
+    });
+}
+
+// 删除购物车项
+function deleteCartItem(userId, productId) {
+    fetch('/deleteCartItem', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            userId: userId,
+            productId: productId,
+        })
+    })
+    .then(function(response) {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(function(data) {
+        console.log('Cart item deleted successfully:', data);
+    })
+    .catch(function(error) {
+        console.error('Delete cart item error:', error);
+    });
+}
+        </script>
+        
+        
   </body>
 </html>
